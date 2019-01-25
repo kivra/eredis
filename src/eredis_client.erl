@@ -24,6 +24,8 @@
 -behaviour(gen_server).
 -include("eredis.hrl").
 
+-include_lib("stdlib2/include/prelude.hrl").
+
 %% API
 -export([start_link/6, stop/1, select_database/2]).
 
@@ -305,9 +307,18 @@ safe_send(Pid, Value) ->
 %% returns something we don't expect, we crash. Returns {ok, State} or
 %% {SomeError, Reason}.
 connect(State) ->
-    case gen_tcp:connect(State#state.host, State#state.port,
-                         ?SOCKET_OPTS, State#state.connect_timeout) of
-        {ok, Socket} ->
+    case timer:tc(gen_tcp, connect, [ State#state.host
+                                    , State#state.port
+                                    , ?SOCKET_OPTS
+                                    , State#state.connect_timeout])
+    of
+        {Microseconds, {ok, Socket}} ->
+            ?info( "### connecting to redis with [~p, ~p, ~p, ~p] took ~p us"
+                 , [ State#state.host
+                   , State#state.port
+                   , ?SOCKET_OPTS
+                   , State#state.connect_timeout
+                   , Microseconds]),
             case authenticate(Socket, State#state.password) of
                 ok ->
                     case select_database(Socket, State#state.database) of
@@ -319,7 +330,7 @@ connect(State) ->
                 {error, Reason} ->
                     {error, {authentication_error, Reason}}
             end;
-        {error, Reason} ->
+        {_, {error, Reason}} ->
             {error, {connection_error, Reason}}
     end.
 
