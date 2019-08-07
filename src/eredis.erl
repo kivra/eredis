@@ -49,18 +49,22 @@ start_link(Host, Port, Database, Password, ReconnectSleep) ->
 start_link(Host, Port, Database, Password, ReconnectSleep, ConnectTimeout) ->
     start_link(Host, Port, Database, Password, ReconnectSleep, ConnectTimeout, []).
 
-start_link(Host, Port, Database, Password, ReconnectSleep, ConnectTimeout, SocketOptions)
-  when is_list(Host) orelse
+start_link(Host, Port, Database, Password, ReconnectSleep, ConnectTimeout, SocketOptions) ->
+    start_link(Host, Port, Database, Password, ReconnectSleep, ConnectTimeout, SocketOptions, []).
+
+start_link(Host, Port, Database, Password, ReconnectSleep, ConnectTimeout, SocketOptions, GenOptions)
+    when is_list(Host) orelse
             (is_tuple(Host) andalso tuple_size(Host) =:= 2 andalso element(1, Host) =:= local),
        is_integer(Port),
        is_integer(Database) orelse Database == undefined,
        is_list(Password),
        is_integer(ReconnectSleep) orelse ReconnectSleep =:= no_reconnect,
        is_integer(ConnectTimeout),
-       is_list(SocketOptions) ->
+       is_list(SocketOptions),
+       is_list(GenOptions) ->
 
     eredis_client:start_link(Host, Port, Database, Password,
-                             ReconnectSleep, ConnectTimeout, SocketOptions).
+                             ReconnectSleep, ConnectTimeout, SocketOptions, GenOptions).
 
 %% @doc: Callback for starting from poolboy
 -spec start_link(server_args()) -> {ok, Pid::pid()} | {error, Reason::term()}.
@@ -72,8 +76,8 @@ start_link(Args) ->
     ReconnectSleep = proplists:get_value(reconnect_sleep, Args, 100),
     ConnectTimeout = proplists:get_value(connect_timeout, Args, ?TIMEOUT),
     SocketOptions  = proplists:get_value(socket_options, Args, []),
-
-    start_link(Host, Port, Database, Password, ReconnectSleep, ConnectTimeout, SocketOptions).
+    GenOptions     = proplists:get_value(gen_options, Args, []),
+    start_link(Host, Port, Database, Password, ReconnectSleep, ConnectTimeout, SocketOptions, GenOptions).
 
 stop(Client) ->
     eredis_client:stop(Client).

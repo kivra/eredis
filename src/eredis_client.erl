@@ -25,7 +25,7 @@
 -include("eredis.hrl").
 
 %% API
--export([start_link/7, stop/1, select_database/2]).
+-export([start_link/8, stop/1, select_database/2]).
 
 -export([do_sync_command/2]).
 
@@ -57,11 +57,12 @@
                  Password::string(),
                  ReconnectSleep::reconnect_sleep(),
                  ConnectTimeout::integer() | undefined,
-                 SocketOptions::list()) ->
+                 SocketOptions::list(),
+                 GenOptions::gen:options()) ->
                         {ok, Pid::pid()} | {error, Reason::term()}.
-start_link(Host, Port, Database, Password, ReconnectSleep, ConnectTimeout, SocketOptions) ->
+start_link(Host, Port, Database, Password, ReconnectSleep, ConnectTimeout, SocketOptions, GenOptions) ->
     gen_server:start_link(?MODULE, [Host, Port, Database, Password,
-                                    ReconnectSleep, ConnectTimeout, SocketOptions], []).
+                                    ReconnectSleep, ConnectTimeout, SocketOptions], GenOptions).
 
 
 stop(Pid) ->

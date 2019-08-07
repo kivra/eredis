@@ -125,6 +125,7 @@ the following arguments:
 * Reconnect sleep, integer of milliseconds to sleep between reconnect attempts
 * Connect timeout, timeout value in milliseconds to use in `gen_tcp:connect`, default is 5000
 * Socket options, proplist of options to be sent to `gen_tcp:connect`, default is `?SOCKET_OPTS`
+* Gen options, proplist of options to be sent to `gen_server:start_link`, default is []
 
 ## Reconnecting on Redis down / network failure / timeout / etc
 
